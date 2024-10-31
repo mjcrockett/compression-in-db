@@ -15,7 +15,7 @@ SELECT [Id]
   ,[Surname]
   ,Info
   ,CAST(DECOMPRESS(Info) AS NVARCHAR(MAX)) AS  AfterCastingDecompression
-  FROM [MCrockett].[dbo].[Player]
+  FROM Player
   WHERE Id = 9
 ```
 Note, `varbinary(max)` is being used as the datatype for the compressed data in the data table.
