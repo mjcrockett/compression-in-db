@@ -1,5 +1,7 @@
 ﻿using System.Data;
 using System.Data.OleDb;
+using System.IO.Compression;
+using System.Text;
 
 var helper = new Helper();
 var compressed = helper.InsertQuery();
@@ -9,8 +11,9 @@ Console.WriteLine("The compressed data: " + compressed.Value);
 var uncompressed = helper.ReadQuery(compressed.Id);
 Console.WriteLine("The uncompressed data:" + uncompressed.Info);
 
-helper.DeleteQuery(compressed.Id);
-Console.WriteLine("Row deleted.");
+//helper.DeleteQuery(compressed.Id);
+//Console.WriteLine("Row deleted.");
+
 
 public class Helper
 {
@@ -19,7 +22,7 @@ public class Helper
     private readonly string _insertQuery =
         @"INSERT INTO Player([Name],[Surname],[Info]) 
         OUTPUT INSERTED.Id, inserted.Info
-        VALUES(?,?,COMPRESS(?))";
+        VALUES(?,?,?)";
 
     private readonly string _selectQuery =
         @"SELECT [Id],[Name],[Surname],CAST(DECOMPRESS(Info) AS NVARCHAR(MAX)) AS AfterCastingDecompression 
@@ -41,7 +44,12 @@ public class Helper
 
         cmd.Parameters.Add(new OleDbParameter("@name", "MichaelTest"));
         cmd.Parameters.Add(new OleDbParameter("@surname", "CrockettTest"));
-        cmd.Parameters.Add(new OleDbParameter("@info", "{\"sport\":\"Basketball\",\"age\": 45,\"rank\":1,\"points\":15258, turn\":17}"));
+
+        var uncompressedString = "{\"sport\":\"Basketball\",\"age\": 45,\"rank\":1,\"points\":15258, turn\":17}";
+        byte[] compressedBytes = Compress(uncompressedString);
+
+        var param = cmd.Parameters.Add("@info", OleDbType.VarBinary, -1);
+        param.Value = compressedBytes;
 
         cmd.Connection = connection;
 
@@ -49,14 +57,14 @@ public class Helper
 
         using OleDbDataReader reader = cmd.ExecuteReader();
 
-        var compressedData = new CompressedData();
+        var result = new CompressedData();
         while (reader.Read())
         {
-            compressedData.Id = reader.GetInt32(0);
-            var foo = System.Text.Encoding.UTF8.GetString((byte[])reader["Info"]);
-            compressedData.Value = foo;
+            result.Id = reader.GetInt32(0);
+            var encoded = System.Text.Encoding.Unicode.GetString((byte[])reader["Info"]);
+            result.Value = encoded;
         }
-        return compressedData;
+        return result;
     }
 
     public UncompressedData ReadQuery(int id)
@@ -98,6 +106,25 @@ public class Helper
         connection.Open();
 
         cmd.ExecuteNonQuery();
+    }
+
+    public static byte[] Compress(string input)
+    {
+        byte[] encoded = Encoding.Unicode.GetBytes(input);
+        byte[] compressed = Compress(encoded);
+        return compressed;
+    }
+
+    public static byte[] Compress(byte[] bytes)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal))
+            {
+                gzipStream.Write(bytes, 0, bytes.Length);
+            }
+            return memoryStream.ToArray();
+        }
     }
 }
 
