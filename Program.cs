@@ -20,7 +20,7 @@ public class Helper
     private readonly string _connectionString = "Provider=sqloledb;Data Source=localhost\\SQLEXPRESS01;Initial Catalog=MCrockett; Trusted_Connection=yes;";
 
     private readonly string _insertQuery =
-        @"INSERT INTO Player([Name],[Surname],[Info]) 
+        @"INSERT INTO [MCrockett].[dbo].[Player]([Name],[Surname],[Info]) 
         OUTPUT INSERTED.Id, inserted.Info
         VALUES(?,?,?)";
 
@@ -30,7 +30,7 @@ public class Helper
         WHERE [Id] = ?";
 
     private readonly string _deleteQuery =
-        @"DELETE Player
+        @"DELETE [MCrockett].[dbo].[Player]
         WHERE [Id] = ?";
 
     public Helper() { }

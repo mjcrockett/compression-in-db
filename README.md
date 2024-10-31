@@ -13,9 +13,9 @@ using the Decompress method:
 SELECT [Id]
   ,[Name]
   ,[Surname]
-  ,Info
+  ,[Info]
   ,CAST(DECOMPRESS(Info) AS NVARCHAR(MAX)) AS  AfterCastingDecompression
-  FROM Player
-  WHERE Id = 9
+FROM Player
+WHERE Id = 9
 ```
 Note, `varbinary(max)` is being used as the datatype for the compressed data in the data table.
