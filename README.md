@@ -3,14 +3,12 @@ The point of this proof-of-concept was to replicate the SQL compress method for 
 code to avoid additional overhead in the database, and then being able to decompress using the basic SQL Decompress method.
 
 The following SQL Compress method has been replicated in C#:
-<pre><code>
-INSERT INTO Player ([Name], [Surname], [Info])     
+<pre><code>INSERT INTO Player ([Name], [Surname], [Info])     
 VALUES ('John', 'Smith', <b>COMPRESS</b>(N'{"sport":"Tennis","age": 28,"rank":1,"points":15258, turn":17}'))
 </pre></code>
 Therefore, after data has been inserted into the database, the same data can easily be decompressed in SQL Server Management Studio
 using the Decompress method:
-<pre><code>
-SELECT [Id]
+<pre><code>SELECT [Id]
   ,[Name]
   ,[Surname]
   ,[Info]
